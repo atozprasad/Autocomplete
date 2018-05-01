@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+<style type="text/css">
+.center{
+    position:absolute;
+    height: X px;
+    width: Y px;
+    left:30%;
+    top:50%;
+    margin-top:- X/2 px;
+    margin-left:- Y/2 px;
+}
+
+</style>
+
+	<meta charset="utf-8">
+	<title>
+		Demo auto complete
+	</title>
+	<script type="text/javascript">
+		window.addEventListener("load", function(){
+	// Add a keyup event listener to our input element
+	document.getElementById('name_input').addEventListener("keyup", function(event){
+		//Timeout for user idle time
+		setTimeout(function(){
+			hinter(event)
+		},400);
+	}
+		);
+	// create one global XHR object 
+	// so we can abort old requests when a new one is make
+	window.hinterXHR = new XMLHttpRequest();
+});
+
+// Autocomplete for form
+function hinter(event) {
+	var input = event.target;
+	var huge_list = document.getElementById('huge_list');
+	huge_list.value ="";
+	// minimum number of characters before we start to generate suggestions
+	var min_characters = 0;
+
+	
+		window.hinterXHR.abort();
+		window.hinterXHR.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var response = JSON.parse( this.responseText ); 
+				huge_list.innerHTML = "";
+
+				response.documents.forEach(function(item) {
+                    // Create a new <option> element.
+                    var option = document.createElement('option');
+                    option.value = item.name;
+                    huge_list.appendChild(option);
+                });
+			}
+		};
+		window.hinterXHR.open("GET", "http://35.202.232.166:8080/search?query="+input.value, true);
+		window.hinterXHR.send()
+	
+}
+
+function validateForm(){
+
+	// Get the input element
+	var input = document.getElementById('name_input');
+	// Get the datalist
+	var huge_list = document.getElementById('huge_list');
+huge_list.value="";
+
+	// If we find the input inside our list, we submit the form
+	for (var element of huge_list.children) {
+		if(element.value == input.value) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+	</script>
+</head>
+<body>
+ <div class="center">
+  <!-- Page content -->
+
+    <form onsubmit="return validateForm()"  >
+       Search: <input type="text" name="name" id="name_input" list="huge_list" style="width:300%;max-width:800px;outline:0">
+		<datalist id="huge_list">
+		</datalist>
+		<br/>
+	</form>
+</div>
+	
+
+</body>
+</html>
